@@ -1,7 +1,9 @@
-import { createContext, useState } from "react";
+import { createContext, useEffect, useState } from "react";
 import {
+  getMe,
   loginHospital,
   loginUser,
+  logoutUser,
   registerHospital,
   registerUser,
 } from "../services/authService";
@@ -9,68 +11,71 @@ import {
 export const AuthContext = createContext(null);
 
 export const AuthProvider = ({ children }) => {
-  const [user, setUser] = useState(() => {
-    try {
-      return JSON.parse(localStorage.getItem("user")) || null;
-    } catch {
-      localStorage.removeItem("user");
-      return null;
-    }
-  });
-
-  const [loading, setLoading] = useState(false);
+  const [user, setUser] = useState(null);
+  const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
 
-const login = async (data, type = "user") => {
-  setLoading(true);
-  setError(null);
-
-  try {
-    const res =
-      type === "hospital"
-        ? await loginHospital(data)
-        : await loginUser(data);
-
-    const userWithRole = {
-      ...res.user,
-      role: res.user.role, // ✅ FIXED
+  // 🔍 Check auth on app load
+  useEffect(() => {
+    const checkAuth = async () => {
+      try {
+        const res = await getMe();
+        setUser(res.user);
+      } catch {
+        setUser(null);
+      } finally {
+        setLoading(false);
+      }
     };
 
-    localStorage.setItem("token", res.token);
-    localStorage.setItem("user", JSON.stringify(userWithRole));
+    checkAuth();
+  }, []);
 
-    setUser(userWithRole);
-    return res;
-  } catch (err) {
-    setError(err.message || "Login failed");
-    throw err;
-  } finally {
-    setLoading(false);
-  }
-};
-// inside AuthProvider
+  // 🔐 LOGIN
+  const login = async (data, type = "user") => {
+    setLoading(true);
+    setError(null);
 
-const signup = async (data, type = "user") => {
-  setLoading(true);
-  setError(null);
+    try {
+      const res =
+        type === "hospital"
+          ? await loginHospital(data)
+          : await loginUser(data);
 
-  try {
-    const res =
-      type === "hospital"
-        ? await registerHospital(data)
-        : await registerUser(data);
+      setUser(res.user); // ✅ no localStorage
+      return res;
+    } catch (err) {
+      setError(err.message || "Login failed");
+      throw err;
+    } finally {
+      setLoading(false);
+    }
+  };
 
-    return res;
-  } catch (err) {
-    setError(err.message || "Signup failed");
-    throw err;
-  } finally {
-    setLoading(false);
-  }
-};
-  const logout = () => {
-    localStorage.removeItem("token");
-    localStorage.removeItem("user");
+  // 📝 SIGNUP
+  const signup = async (data, type = "user") => {
+    setLoading(true);
+    setError(null);
+
+    try {
+      const res =
+        type === "hospital"
+          ? await registerHospital(data)
+          : await registerUser(data);
+
+      setUser(res.user); // auto-login after register
+      return res;
+    } catch (err) {
+      setError(err.message || "Signup failed");
+      throw err;
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  // 🚪 LOGOUT
+  const logout = async () => {
+    await logoutUser();
     setUser(null);
   };
 
