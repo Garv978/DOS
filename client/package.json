@@ -12,7 +12,7 @@
   "dependencies": {
     "@fortawesome/fontawesome-free": "^7.2.0",
     "@tailwindcss/vite": "^4.2.4",
-    "axios": "^1.15.2",
+    "axios": "^1.16.0",
     "papaparse": "^5.5.3",
     "react": "^19.2.5",
     "react-dom": "^19.2.5",

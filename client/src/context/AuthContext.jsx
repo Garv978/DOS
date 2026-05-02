@@ -63,7 +63,7 @@ export const AuthProvider = ({ children }) => {
           ? await registerHospital(data)
           : await registerUser(data);
 
-      setUser(res.user); // auto-login after register
+      setUser(res) // auto-login after register
       return res;
     } catch (err) {
       setError(err.message || "Signup failed");

@@ -1,22 +1,16 @@
 import { AuthContext } from "../context/AuthContext";
-import Dashboard from "../views/Dashboard";
+import Dashboard from "../views/dashboard/UserDashboard";
+import HospitalDashboard from "../views/dashboard/HospitalDashboard";
 import HospitalLogin from "../views/auth/HospitalLogin";
 import HospitalSignup from "../views/auth/HospitalSignup";
 import LandingPage from "../views/LandingPage";
 import LoginPage from "../views/auth/UserLogin";
 import { Navigate } from "react-router-dom";
 import NotFound from "../views/NotFound";
+import ProtectedRoute from "../Components/ProtectedRoute";
 import SignupPage from "../views/auth/UserSignup";
+import UserDashboard from "../views/dashboard/UserDashboard";
 import { useContext } from "react";
-
-// 🔐 Protected Route Wrapper
-const ProtectedRoute = ({ children }) => {
-  const { user, loading } = useContext(AuthContext);
-
-  if (loading) return <div>Loading...</div>;
-
-  return user ? children : <Navigate to="/user/login" />;
-};
 
 const routes = [
   { path: "/", element: <LandingPage /> },
@@ -28,10 +22,19 @@ const routes = [
   { path: "/hospital/login", element: <HospitalLogin /> },
 
   {
-    path: "/dashboard",
+    path: "/user/dashboard",
     element: (
-      <ProtectedRoute>
-        <Dashboard />
+      <ProtectedRoute role="user">
+        <UserDashboard />
+      </ProtectedRoute>
+    ),
+  },
+
+  {
+    path: "/hospital/dashboard",
+    element: (
+      <ProtectedRoute role="hospital">
+        <HospitalDashboard />
       </ProtectedRoute>
     ),
   },

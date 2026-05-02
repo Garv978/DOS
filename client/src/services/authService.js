@@ -2,18 +2,13 @@
 
 const BASE = import.meta.env.VITE_API_URL;
 
-// ===== USER =====
+// ===== LOGIN =====
 export const loginUser = async (data) => {
   const res = await fetch(`${BASE}/auth/login`, {
     method: "POST",
-    headers: {
-      "Content-Type": "application/json",
-    },
-    credentials: "include", // 🔥 IMPORTANT
-    body: JSON.stringify({
-      ...data,
-      role: "user",
-    }),
+    headers: { "Content-Type": "application/json" },
+    credentials: "include",
+    body: JSON.stringify(data), // ❌ removed role
   });
 
   const result = await res.json();
@@ -22,36 +17,17 @@ export const loginUser = async (data) => {
   return result;
 };
 
+export const loginHospital = loginUser; // same endpoint now
+
+// ===== REGISTER =====
 export const registerUser = async (data) => {
   const res = await fetch(`${BASE}/auth/register`, {
     method: "POST",
-    headers: {
-      "Content-Type": "application/json",
-    },
+    headers: { "Content-Type": "application/json" },
     credentials: "include",
     body: JSON.stringify({
       ...data,
-      role: "user",
-    }),
-  });
-
-  const result = await res.json();
-  if (!res.ok) throw new Error(result.message);
-
-  return result;
-};
-
-// ===== HOSPITAL =====
-export const loginHospital = async (data) => {
-  const res = await fetch(`${BASE}/auth/login`, {
-    method: "POST",
-    headers: {
-      "Content-Type": "application/json",
-    },
-    credentials: "include",
-    body: JSON.stringify({
-      ...data,
-      role: "hospital",
+      role: "user", // ✅ keep here
     }),
   });
 
@@ -64,9 +40,7 @@ export const loginHospital = async (data) => {
 export const registerHospital = async (data) => {
   const res = await fetch(`${BASE}/auth/register`, {
     method: "POST",
-    headers: {
-      "Content-Type": "application/json",
-    },
+    headers: { "Content-Type": "application/json" },
     credentials: "include",
     body: JSON.stringify({
       ...data,
@@ -80,6 +54,17 @@ export const registerHospital = async (data) => {
   return result;
 };
 
+export const logoutUser = async () => {
+  const res = await fetch(`${BASE}/auth/logout`, {
+    method: "POST",
+    credentials: "include",
+  });
+
+  if (!res.ok) throw new Error("Logout failed");
+
+  return res.json();
+};
+
 // ===== AUTH CHECK =====
 export const getMe = async () => {
   const res = await fetch(`${BASE}/auth/me`, {
@@ -89,12 +74,4 @@ export const getMe = async () => {
   if (!res.ok) throw new Error("Not authenticated");
 
   return res.json();
-};
-
-// ===== LOGOUT =====
-export const logoutUser = async () => {
-  await fetch(`${BASE}/auth/logout`, {
-    method: "POST",
-    credentials: "include",
-  });
 };

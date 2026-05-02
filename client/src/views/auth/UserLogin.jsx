@@ -1,5 +1,5 @@
 import { Link, useNavigate } from "react-router-dom";
-import { useContext, useState } from "react";
+import { useContext, useEffect, useState } from "react";
 
 import { AuthContext } from "../../context/AuthContext";
 import AuthFormCard from "../../components/auth/AuthFormCard";
@@ -9,7 +9,7 @@ import SignupButton from "../../components/auth/SignUpButton";
 
 function UserLogin() {
   const navigate = useNavigate();
-  const { login, loading, error } = useContext(AuthContext);
+  const { login, loading, error, user } = useContext(AuthContext);
 
   const [formData, setFormData] = useState({
     email: "",
@@ -19,23 +19,48 @@ function UserLogin() {
   const handleChange = (e) =>
     setFormData({ ...formData, [e.target.name]: e.target.value });
 
+  // 🚦 AUTO REDIRECT if already logged in
+  useEffect(() => {
+    if (user?.role) {
+      navigate(`/${user.role}/dashboard`);
+    }
+  }, [user, navigate]);
+
   const handleSubmit = async (e) => {
     e.preventDefault();
     try {
-      await login(formData, "user");
-      navigate("/dashboard"); // ✅
+      const res = await login(formData, "user");
+
+      // 🚀 redirect after login
+      navigate(`/${res.user.role}/dashboard`);
     } catch {}
   };
 
   return (
     <AuthFormCard title="User Login" onSubmit={handleSubmit}>
-      <Box type="email" name="email" placeholder="Email" value={formData.email} onChange={handleChange} />
+      <Box
+        type="email"
+        name="email"
+        placeholder="Email"
+        value={formData.email}
+        onChange={handleChange}
+      />
 
-      <PasswordField name="password" placeholder="Password" value={formData.password} onChange={handleChange} />
+      <PasswordField
+        name="password"
+        placeholder="Password"
+        value={formData.password}
+        onChange={handleChange}
+      />
 
-      <SignupButton text={loading ? "Logging in..." : "Login"} disabled={loading} />
+      <SignupButton
+        text={loading ? "Logging in..." : "Login"}
+        disabled={loading}
+      />
 
-      {error && <p className="text-red-500 text-sm text-center">{error}</p>}
+      {error && (
+        <p className="text-red-500 text-sm text-center">{error}</p>
+      )}
 
       <p className="text-sm text-center mt-4">
         New user?{" "}
